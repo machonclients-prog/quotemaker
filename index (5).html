@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>מחולל הצעות מחיר – אבינועם שחר</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f7f7f8;margin:0}
+  .wrap{display:grid;grid-template-columns:1fr;gap:16px;padding:16px}
+  @media(min-width:1000px){.wrap{grid-template-columns:1.1fr 1fr;padding:24px;gap:20px}}
+  .card{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:18px}
+  .title{font-weight:700;font-size:18px;margin:0 0 12px}
+  label{font-size:12px;color:#333;display:block;margin-bottom:6px}
+  input,select,textarea{width:100%;box-sizing:border-box;border:1px solid #dcdcdc;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff}
+  textarea{min-height:80px}
+  .grid{display:grid;gap:10px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{border:0;border-radius:12px;padding:10px 14px;background:#0ea5e9;color:#fff;font-weight:600;cursor:pointer}
+  .btn.secondary{background:#e5e7eb;color:#111}
+  .btn.danger{background:#ef4444}
+  .muted{font-size:12px;color:#666}
+  .chip{background:#eef2ff;color:#3730a3;border-radius:999px;padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+  .list{display:flex;flex-wrap:wrap;gap:6px}
+  .preview-logo{display:flex;justify-content:flex-end;margin-bottom:8px}
+  .preview{border:1px solid #eee;border-radius:10px;padding:16px;max-height:70vh;overflow:auto;background:#fff}
+  h1{font-size:22px;margin:0 0 10px}
+  ul{padding-inline-start:18px;margin:6px 0}
+  .footer{font-size:12px;color:#666;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h2 class="title">הגדרות הצעה</h2>
+    <div class="grid g2">
+      <div>
+        <label>שם הסוכנות</label>
+        <input id="agencyName" value="סוכנות הדיגיטל של אבינועם שחר"/>
+      </div>
+      <div>
+        <label>שם הלקוח</label>
+        <input id="clientName" placeholder="שם איש קשר/חברה"/>
+      </div>
+      <div class="grid" style="grid-column:1 / -1;">
+        <label>כותרת/שם פרויקט</label>
+        <input id="projectTitle" placeholder="לדוגמה: הקמה וניהול קמפיין דיגיטלי"/>
+      </div>
+      <div>
+        <label>מטבע</label>
+        <select id="currency">
+          <option value="ILS" selected>₪ ILS</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">€ EUR</option>
+        </select>
+      </div>
+      <div>
+        <label>ריטיינר חודשי</label>
+        <input id="retainer" type="number" value="3800"/>
+      </div>
+      <div>
+        <label>דמי הקמה</label>
+        <input id="setup" type="number" value="0"/>
+      </div>
+      <div class="row">
+        <input id="includeVat" type="checkbox" checked/>
+        <label for="includeVat">מחירים לפני מע״מ</label>
+      </div>
+      <div>
+        <label>הודעה מראש (ימים)</label>
+        <input id="noticeDays" type="number" value="14"/>
+      </div>
+      <div>
+        <label>לוגו (PNG/JPG/SVG)</label>
+        <input id="logo" type="file" accept="image/*"/>
+        <div class="muted">הלוגו יישמר מקומית בדפדפן וייצא ל־PDF/HTML.</div>
+      </div>
+    </div>
+
+    <div style="height:8px"></div>
+
+    <div class="grid">
+      <label>סעיפי שירות (ניתן לערוך)</label>
+      <div class="list" id="deliverablesList"></div>
+      <div class="row">
+        <input id="newDeliverable" placeholder="הוסף סעיף (למשל: קריאייטיב UGC)"/>
+        <button class="btn" id="addDeliverable">הוסף</button>
+      </div>
+    </div>
+
+    <div style="height:8px"></div>
+
+    <div class="grid">
+      <label>אבני דרך</label>
+      <div class="row">
+        <input id="msTitle" placeholder="כותרת (למשל: שבוע 1)"/>
+        <input id="msText" placeholder="תיאור (למשל: מחקר, אסטרטגיה והקמה)"/>
+        <button class="btn" id="addMilestone">הוסף</button>
+      </div>
+      <div class="list" id="milestonesList"></div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="row">
+      <button class="btn secondary" id="resetBtn">איפוס</button>
+      <button class="btn" id="copyBtn">העתק טקסט</button>
+      <button class="btn" id="downloadBtn">הורד HTML</button>
+      <button class="btn" id="printBtn">הדפס ל-PDF</button>
+    </div>
+    <div class="footer">* המחירים אינם כוללים מע״מ | תקציב מדיה משולם ישירות לפלטפורמות | ניתן לסיים בהודעה מראש לפי ההגדרה.</div>
+  </div>
+
+  <div class="card">
+    <h2 class="title">תצוגה מקדימה</h2>
+    <div class="preview-logo" id="previewLogo"></div>
+    <div class="preview" id="preview"></div>
+  </div>
+</div>
+
+<script>
+const shekel = new Intl.NumberFormat("he-IL",{style:"currency",currency:"ILS"});
+function fmt(amount, cur){
+  const n = Number(amount||0);
+  if(cur==="ILS") return shekel.format(n);
+  return n.toLocaleString('he-IL') + " " + cur;
+}
+
+const defaultDeliverables = [
+  "הפקת 4 סרטונים שיווקיים (ברירת מחדל)",
+  "ניהול קמפיין ממומן בפייסבוק ובאינסטגרם",
+  "ניהול קמפיין בגוגל (חיפוש/תצוגה)",
+  "בנייה/אופטימיזציה של עמוד נחיתה או בוט לקליטת לידים",
+  "חיבור ל-CRM/Google Sheets + תיוג אוטומטי",
+  "אוטומציה: הודעות וואטסאפ/SMS/מייל",
+  "אופטימיזציה שוטפת להורדת עלות לליד ושיפור יחס המרה",
+  "קשר שוטף לשיפור תוצאות המכירות"
+];
+
+const state = {
+  agencyName: document.getElementById('agencyName').value,
+  clientName: "",
+  projectTitle: "",
+  currency: document.getElementById('currency').value,
+  retainer: document.getElementById('retainer').value,
+  setup: document.getElementById('setup').value,
+  includeVat: document.getElementById('includeVat').checked,
+  noticeDays: Number(document.getElementById('noticeDays').value)||14,
+  deliverables: [...defaultDeliverables],
+  milestones: [
+    {title:"שבוע 1", text:"מחקר, אסטרטגיה והקמה"},
+    {title:"שבוע 2", text:"השקה ובדיקות A/B"},
+    {title:"שבועות 3–4", text:"אופטימיזציה וסקיילינג"}
+  ],
+  logoDataUrl: null
+};
+
+function saveLS(){ localStorage.setItem('proposalGen:v1', JSON.stringify(state)); }
+function loadLS(){
+  try{
+    const s = JSON.parse(localStorage.getItem('proposalGen:v1'));
+    if(!s) return;
+    Object.assign(state,s);
+    document.getElementById('agencyName').value = state.agencyName||"";
+    document.getElementById('clientName').value = state.clientName||"";
+    document.getElementById('projectTitle').value = state.projectTitle||"";
+    document.getElementById('currency').value = state.currency||"ILS";
+    document.getElementById('retainer').value = state.retainer||3800;
+    document.getElementById('setup').value = state.setup||0;
+    document.getElementById('includeVat').checked = !!state.includeVat;
+    document.getElementById('noticeDays').value = state.noticeDays||14;
+  }catch(e){}
+}
+loadLS();
+
+function renderDeliverables(){
+  const box = document.getElementById('deliverablesList'); box.innerHTML="";
+  state.deliverables.forEach((d,idx)=>{
+    const span = document.createElement('span');
+    span.className="chip";
+    span.textContent=d;
+    const x=document.createElement('button'); x.textContent="×"; x.style.border=0;x.style.background="transparent";x.style.cursor="pointer";
+    x.onclick=()=>{ state.deliverables.splice(idx,1); saveLS(); renderDeliverables(); render(); };
+    span.appendChild(x);
+    box.appendChild(span);
+  });
+}
+renderDeliverables();
+
+function renderMilestones(){
+  const box = document.getElementById('milestonesList'); box.innerHTML="";
+  state.milestones.forEach((m,idx)=>{
+    const span=document.createElement('span'); span.className="chip"; span.textContent=`${m.title} – ${m.text}`;
+    const x=document.createElement('button'); x.textContent="×"; x.style.border=0;x.style.background="transparent";x.style.cursor="pointer";
+    x.onclick=()=>{ state.milestones.splice(idx,1); saveLS(); renderMilestones(); render(); };
+    span.appendChild(x);
+    box.appendChild(span);
+  });
+}
+renderMilestones();
+
+function compose(){
+  const lines=[];
+  const title = state.projectTitle || "הקמה וניהול קמפיין דיגיטלי";
+  lines.push(`<h1>${title}</h1>`);
+  if(state.clientName){ lines.push(`<div><strong>לכבוד:</strong> ${state.clientName}</div>`); }
+  lines.push(`<p><strong>מי אנחנו</strong><br>${state.agencyName} – סוכנות בוטיק עם ניסיון של מעל 17 שנה וניהול תקציבים של 50,000,000₪+.</p>`);
+  lines.push(`<p><strong>מה תקבלו</strong></p>`);
+  lines.push("<ul>"+state.deliverables.map(d=>`<li>${d}</li>`).join("")+"</ul>");
+  if(state.milestones.length){
+    lines.push(`<p><strong>תוכנית עבודה ולו\"ז</strong></p>`);
+    lines.push("<ul>"+state.milestones.map(m=>`<li>${m.title}: ${m.text}</li>`).join("")+"</ul>");
+  }
+  const vatText = state.includeVat ? " + מע\"מ" : " (כולל מע\"מ)";
+  lines.push(`<p><strong>השקעה כספית</strong><br>ריטיינר חודשי: ${fmt(state.retainer,state.currency)}${vatText}` + (Number(state.setup)>0?`<br>דמי הקמה חד-פעמיים: ${fmt(state.setup,state.currency)}${vatText}`:"") + "</p>");
+  lines.push(`<p><strong>אחריות ותנאים</strong><br>אחריות שביעות רצון 30 יום.<br>תנאי תשלום: נטו+7 | ביטול: בהודעה של ${state.noticeDays} יום מראש | בעלות על נכסים דיגיטליים: הלקוח.</p>`);
+  lines.push(`<p><strong>לסיום</strong><br>נשמח לצאת לדרך – השלב הבא הוא שיחת קיקאוף ותיאום גישה לנכסים.<br><br>בברכה,<br>אבינועם שחר<br>Owner & Head of Growth<br>${state.agencyName}</p>`);
+  return lines.join("");
+}
+
+function render(){
+  document.getElementById('preview').innerHTML = compose();
+  const pl = document.getElementById('previewLogo');
+  pl.innerHTML = state.logoDataUrl ? `<img src="${state.logoDataUrl}" alt="לוגו" style="max-height:48px">` : "";
+}
+render();
+
+// Inputs wiring
+document.getElementById('agencyName').oninput = e=>{state.agencyName=e.target.value; saveLS(); render();};
+document.getElementById('clientName').oninput = e=>{state.clientName=e.target.value; saveLS(); render();};
+document.getElementById('projectTitle').oninput = e=>{state.projectTitle=e.target.value; saveLS(); render();};
+document.getElementById('currency').onchange = e=>{state.currency=e.target.value; saveLS(); render();};
+document.getElementById('retainer').oninput = e=>{state.retainer=e.target.value; saveLS(); render();};
+document.getElementById('setup').oninput = e=>{state.setup=e.target.value; saveLS(); render();};
+document.getElementById('includeVat').onchange = e=>{state.includeVat=e.target.checked; saveLS(); render();};
+document.getElementById('noticeDays').oninput = e=>{state.noticeDays=Number(e.target.value)||14; saveLS(); render();};
+document.getElementById('logo').onchange = e=>{
+  const f=e.target.files && e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=ev=>{state.logoDataUrl=ev.target.result; saveLS(); render();}; r.readAsDataURL(f);
+};
+
+document.getElementById('addDeliverable').onclick=()=>{
+  const v = document.getElementById('newDeliverable').value.trim();
+  if(!v) return; state.deliverables.push(v); document.getElementById('newDeliverable').value=""; saveLS(); renderDeliverables(); render();
+};
+document.getElementById('addMilestone').onclick=()=>{
+  const t=document.getElementById('msTitle').value.trim();
+  const d=document.getElementById('msText').value.trim();
+  if(!t||!d) return;
+  state.milestones.push({title:t, text:d}); document.getElementById('msTitle').value=\"\"; document.getElementById('msText').value=\"\";
+  saveLS(); renderMilestones(); render();
+};
+document.getElementById('resetBtn').onclick=()=>{
+  localStorage.removeItem('proposalGen:v1'); location.reload();
+};
+document.getElementById('copyBtn').onclick=async()=>{
+  const tmp=document.createElement('textarea'); tmp.value=document.getElementById('preview').innerText; document.body.appendChild(tmp); tmp.select();
+  try{ document.execCommand('copy'); }catch(e){ await navigator.clipboard.writeText(tmp.value); } document.body.removeChild(tmp);
+};
+document.getElementById('downloadBtn').onclick=()=>{
+  const html = `<!doctype html><html lang=\"he\" dir=\"rtl\"><head><meta charset=\"utf-8\"><title>${state.projectTitle||\"הצעה\"}</title></head><body>${document.getElementById('preview').innerHTML}</body></html>`;
+  const blob = new Blob([html], {type:\"text/html;charset=utf-8\"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=(state.projectTitle||\"proposal\").replace(/\\s+/g,'_')+\".html\"; a.click(); URL.revokeObjectURL(url);
+};
+document.getElementById('printBtn').onclick=()=>{ window.print(); };
+</script>
+</body>
+</html>
